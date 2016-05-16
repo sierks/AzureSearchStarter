@@ -1,0 +1,54 @@
+﻿@model IList<AzureSearchStarter.Models.SuperHeroModel>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+
+@{
+    ViewBag.Title = "Heroes";
+}
+
+<h2>Heroes</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+@using (Html.BeginForm("Search", ViewContext.RouteData.Values["controller"].ToString(), FormMethod.Get))
+{
+    <p>
+        Find by name: @Html.TextBox("SearchString", ViewBag.CurrentFilter as string)
+        <input type="submit" value="Search" />
+    </p>
+}
+<table class="table" id="superHeroIndexTable">
+    <tr>
+        <th>
+            @Html.ActionLink("Super Hero Name", "Index", new { sortOrder = ViewBag.SuperHeroNameSortParm, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            @Html.ActionLink("Real Name", "Index", new { sortOrder = ViewBag.RealNameSortParm, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            Powers & Abilities
+        </th>
+        <th>&nbsp;</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.SuperHeroName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RealName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PowersAndAbilities)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { SuperHeroModelID = item.SuperHeroModelID }) |
+                @Html.ActionLink("Delete", "Delete", new { SuperHeroModelID = item.SuperHeroModelID })
+            </td>
+        </tr>
+    }
+
+</table>

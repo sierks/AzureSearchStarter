@@ -1,0 +1,86 @@
+﻿@model Microsoft.Rest.Azure.AzureOperationResponse<Microsoft.Azure.Search.Models.DocumentSearchResult<AzureSearchStarter.Models.SuperHeroModel>>
+@{
+    ViewBag.Title = "Search";
+}
+
+<h2>Search</h2>
+
+@using (Html.BeginForm("Search", ViewContext.RouteData.Values["controller"].ToString(), FormMethod.Get))
+{
+    <p>
+        Find by name: @Html.TextBox("SearchString", ViewBag.CurrentFilter as string)
+        <input type="submit" value="Search" />
+    </p>
+}
+
+@if (this.Model == null || this.Model.Body == null || this.Model.Body.Results == null || this.Model.Body.Results.Count <= 0)
+{
+    <p>
+        <i>
+            No Search Results fit your Query: @ViewBag.CurrentFilter
+        </i>
+    </p>
+}
+else
+{
+    <table class="table" id="superHeroIndexTable">
+        <tr>
+            <th>
+                Super Hero Name
+            </th>
+            <th>
+                Real Name
+            </th>
+            <th>
+                Powers & Abilities
+            </th>
+            <th>&nbsp;</th>
+        </tr>
+
+        @foreach (var result in Model.Body.Results)
+        {
+            var item = result.Document;
+            <tr>
+                <td>
+                    @displayDataOrHighlights(item.SuperHeroName, "SuperHeroName", result)
+                </td>
+                <td>
+                    @displayDataOrHighlights(item.RealName, "RealName", result)
+                </td>
+                <td>
+                    @displayDataOrHighlights(item.PowersAndAbilities, "PowersAndAbilities", result)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { SuperHeroModelID = item.SuperHeroModelID }) |
+                    @Html.ActionLink("Delete", "Delete", new { SuperHeroModelID = item.SuperHeroModelID })
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@helper displayDataOrHighlights(string normalData, string highlightFieldName, Microsoft.Azure.Search.Models.SearchResult<AzureSearchStarter.Models.SuperHeroModel> result)
+{
+    var highlightedText = string.Empty;
+    if (result.Highlights != null && result.Highlights.Count > 0 && result.Highlights.ContainsKey(highlightFieldName) && result.Highlights[highlightFieldName] != null && result.Highlights[highlightFieldName].Count > 0)
+    {
+        foreach (var highlight in result.Highlights[highlightFieldName])
+        {
+            if (!string.IsNullOrEmpty(highlightedText))
+            {
+                highlightedText += "...";
+            }
+            highlightedText += highlight;
+        }
+
+        <text>@Html.Raw(highlightedText)</text>
+    }
+    else
+    {
+        <text>@normalData</text>
+    }
+}

@@ -1,0 +1,77 @@
+﻿@model SortedList<double, Microsoft.Azure.Search.Models.SearchResult<AzureSearchStarter.Models.SuperHeroModel>>
+@{
+    ViewBag.Title = "Search";
+}
+
+<h2>Search</h2>
+
+@using (Html.BeginForm("Index", ViewContext.RouteData.Values["controller"].ToString(), FormMethod.Get))
+{
+    <p>
+        Find by name: @Html.TextBox("SearchString", ViewBag.CurrentFilter as string)
+        <input type="submit" value="Search" />
+    </p>
+}
+
+@if (this.Model == null || this.Model.Count <= 0)
+{
+    <p>
+        <i>
+            No Search Results fit your Query: @ViewBag.CurrentFilter
+        </i>
+    </p>
+}
+else
+{
+    <table class="table" id="superHeroIndexTable">
+        <tr>
+            <th>
+                Super Hero Name
+            </th>
+            <th>
+                Real Name
+            </th>
+            <th>
+                Powers & Abilities
+            </th>
+        </tr>
+
+        @foreach (var result in Model.Values)
+        {
+            var item = result.Document;
+            <tr>
+                <td>
+                    @displayDataOrHighlights(item.SuperHeroName, "SuperHeroName", result)
+                </td>
+                <td>
+                    @displayDataOrHighlights(item.RealName, "RealName", result)
+                </td>
+                <td>
+                    @displayDataOrHighlights(item.PowersAndAbilities, "PowersAndAbilities", result)
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+@helper displayDataOrHighlights(string normalData, string highlightFieldName, Microsoft.Azure.Search.Models.SearchResult<AzureSearchStarter.Models.SuperHeroModel> result)
+{
+    var highlightedText = string.Empty;
+    if (result.Highlights != null && result.Highlights.Count > 0 && result.Highlights.ContainsKey(highlightFieldName) && result.Highlights[highlightFieldName] != null && result.Highlights[highlightFieldName].Count > 0)
+    {
+        foreach (var highlight in result.Highlights[highlightFieldName])
+        {
+            if (!string.IsNullOrEmpty(highlightedText))
+            {
+                highlightedText += "...";
+            }
+            highlightedText += highlight;
+        }
+
+        <text>@Html.Raw(highlightedText)</text>
+    }
+    else
+    {
+        <text>@normalData</text>
+    }
+}
